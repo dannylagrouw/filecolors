@@ -3,6 +3,7 @@
   "module": "src/server/index.ts",
   "type": "module",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "bun --hot src/server/index.ts",
     "start": "bun src/server/index.ts"

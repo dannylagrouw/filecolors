@@ -101,3 +101,7 @@ bun test
   named colors, or 8-digit alpha hex in v1.
 - Text files only; a configured max upload size (5 MB) is enforced.
 
+## License
+
+MIT — see [LICENSE](LICENSE).
+
