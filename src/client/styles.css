@@ -16,6 +16,7 @@
   --color-error: #b00020;
   --color-success: #0a8a0a;
   --color-highlight: #92afff;
+  --color-edited: #2fa84f;
   --color-control-bg: rgba(255, 255, 255, 0.85);
   --color-control-body-bg: rgba(255, 255, 255, 0.9);
 }
@@ -37,6 +38,7 @@
     --color-error: #ff6b6b;
     --color-success: #6bcf6b;
     --color-highlight: #3b6ef9;
+    --color-edited: #4bd671;
     --color-control-bg: rgba(30, 30, 32, 0.85);
     --color-control-body-bg: rgba(30, 30, 32, 0.9);
   }
@@ -58,6 +60,7 @@
   --color-error: #ff6b6b;
   --color-success: #6bcf6b;
   --color-highlight: #3b6ef9;
+  --color-edited: #4bd671;
   --color-control-bg: rgba(30, 30, 32, 0.85);
   --color-control-body-bg: rgba(30, 30, 32, 0.9);
 }
@@ -277,6 +280,15 @@ button:disabled {
 .color-bar.highlighted,
 .color-bar.selected {
   outline-offset: 2px;
+}
+
+.color-bar.edited {
+  border: 2px solid var(--color-edited);
+}
+
+.color-bar.edited.highlighted,
+.color-bar.edited.selected {
+  outline-offset: 4px;
 }
 
 .info-backdrop {
