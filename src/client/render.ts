@@ -237,9 +237,11 @@ function renderBar(
       <div class="color-bar-body">
         <input type="color" class="color-picker" value="${hex}" />
         <span class="hex-label">${esc(entry.hex)}</span>
-        <button class="copy-hex">Copy</button>
+        <div class="color-bar-actions">
+          <button class="copy-hex" title="Copy hex code"><i class="fa-solid fa-copy"></i></button>
+          <button class="info-toggle" title="Color info"><i class="fa-solid fa-circle-info"></i></button>
+        </div>
         <span class="copy-confirm"></span>
-        <button class="info-toggle" title="Color info"><i class="fa-solid fa-circle-info"></i> Info</button>
       </div>
     </div>
   `;
