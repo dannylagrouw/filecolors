@@ -23,8 +23,21 @@ export interface RenderHandlers {
 let renderScheduled = false;
 let currentState: AppState | null = null;
 let handlers: RenderHandlers | null = null;
+let escapeListenerAttached = false;
+
+function ensureEscapeListener(): void {
+  if (escapeListenerAttached) return;
+  escapeListenerAttached = true;
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && currentState?.infoOpenId) {
+      currentState.infoOpenId = null;
+      rerender();
+    }
+  });
+}
 
 export function scheduleRender(state: AppState, h: RenderHandlers): void {
+  ensureEscapeListener();
   currentState = state;
   handlers = h;
   if (renderScheduled) return;
