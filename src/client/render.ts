@@ -103,6 +103,7 @@ function renderHeader(state: AppState, h: RenderHandlers): void {
       }
       <button id="sort-toggle-btn">${sortLabels[state.sortMode]}</button>
       <button id="theme-toggle-btn">${themeLabels[state.themeMode]}</button>
+      <span id="copy-confirm" class="copy-confirm"></span>
     </div>
     ${state.uploadError ? `<div class="error">${esc(state.uploadError)}</div>` : ""}
   `;
@@ -203,7 +204,7 @@ function renderPalette(state: AppState): void {
     });
     bar.querySelector(".copy-hex")?.addEventListener("click", async () => {
       const ok = await copyText(entry.hex);
-      const confirmEl = bar.querySelector(".copy-confirm");
+      const confirmEl = document.getElementById("copy-confirm");
       if (confirmEl) {
         confirmEl.textContent = ok ? "Copied!" : "Copy failed";
         confirmEl.classList.add("show");
@@ -257,10 +258,9 @@ function renderBar(
         <input type="color" class="color-picker" value="${hex}" />
         <span class="hex-label">${esc(entry.hex)}</span>
         <div class="color-bar-actions">
-          <button class="copy-hex" title="Copy hex code"><i class="fa-solid fa-copy"></i></button>
+          <button class="copy-hex" title="Copy hex code"><i class="fa-regular fa-copy"></i></button>
           <button class="info-toggle" title="Color info"><i class="fa-solid fa-circle-info"></i></button>
         </div>
-        <span class="copy-confirm"></span>
       </div>
     </div>
   `;
@@ -316,8 +316,8 @@ function swatchRow(colors: string[], entryId: string, originalHex: string): stri
           <div class="info-swatch-original-fill" style="background-color:${originalHex}"></div>
           <div class="info-swatch-overlay" style="color:${overlayFg}">
             <span class="info-swatch-original" style="background-color:${originalHex}" title="Original color: ${originalHex}"></span>
-            <span class="info-swatch-use" data-entry-id="${entryId}" data-hex="${c}">Use</span>
-            <span class="info-swatch-copy" data-hex="${c}">Copy</span>
+            <span class="info-swatch-use" data-entry-id="${entryId}" data-hex="${c}" title="Use this color"><i class="fa-solid fa-check"></i></span>
+            <span class="info-swatch-copy" data-hex="${c}" title="Copy hex code"><i class="fa-regular fa-copy"></i></span>
           </div>
         </div>`;
     })
@@ -450,10 +450,10 @@ function renderInfoModal(state: AppState): void {
       const targetHex = btn.dataset.hex;
       if (!targetHex) return;
       const ok = await copyText(targetHex);
-      const original = btn.textContent;
-      btn.textContent = ok ? "Copied!" : "Failed";
+      const original = btn.innerHTML;
+      btn.innerHTML = ok ? `<i class="fa-solid fa-check"></i>` : `<i class="fa-solid fa-xmark"></i>`;
       setTimeout(() => {
-        btn.textContent = original;
+        btn.innerHTML = original;
       }, 1000);
     });
   });
