@@ -229,17 +229,17 @@ function renderBar(
   return `
     <div class="color-bar" data-entry-id="${entry.id}" style="background-color: ${hex}">
       <div class="color-bar-controls">
-        <button class="move-left" title="Move left" ${!canReorder || index === 0 ? "disabled" : ""}>&larr;</button>
-        <button class="revert-color" title="Revert to original color" ${isEdited ? "" : "disabled"}>&#8634;</button>
-        <button class="favorite-toggle ${isFav ? "active" : ""}" title="Favorite">${isFav ? "★" : "☆"}</button>
-        <button class="move-right" title="Move right" ${!canReorder || index === total - 1 ? "disabled" : ""}>&rarr;</button>
+        <button class="move-left" title="Move left" ${!canReorder || index === 0 ? "disabled" : ""}><i class="fa-solid fa-arrow-left"></i></button>
+        <button class="revert-color" title="Revert to original color" ${isEdited ? "" : "disabled"}><i class="fa-solid fa-rotate-left"></i></button>
+        <button class="favorite-toggle ${isFav ? "active" : ""}" title="Favorite"><i class="fa-${isFav ? "solid" : "regular"} fa-star"></i></button>
+        <button class="move-right" title="Move right" ${!canReorder || index === total - 1 ? "disabled" : ""}><i class="fa-solid fa-arrow-right"></i></button>
       </div>
       <div class="color-bar-body">
         <input type="color" class="color-picker" value="${hex}" />
         <span class="hex-label">${esc(entry.hex)}</span>
         <button class="copy-hex">Copy</button>
         <span class="copy-confirm"></span>
-        <button class="info-toggle" title="Color info">&#9432; Info</button>
+        <button class="info-toggle" title="Color info"><i class="fa-solid fa-circle-info"></i> Info</button>
       </div>
     </div>
   `;
@@ -323,7 +323,7 @@ function renderInfoModal(state: AppState): void {
             <strong>${esc(hex)}</strong>
             <span class="info-name">${esc(name)}</span>
           </div>
-          <button class="info-close" title="Close">&times;</button>
+          <button class="info-close" title="Close"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <div class="info-section">
