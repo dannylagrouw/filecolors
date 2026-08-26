@@ -289,6 +289,11 @@ function renderFileView(state: AppState): void {
     if (!entryId) return;
     span.addEventListener("mouseenter", () => setHighlight(entryId));
     span.addEventListener("mouseleave", () => setHighlight(null));
+    span.addEventListener("click", () => {
+      document
+        .querySelector(`.color-bar[data-entry-id="${entryId}"]`)
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    });
   });
 }
 

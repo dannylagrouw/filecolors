@@ -253,6 +253,7 @@ button:disabled {
 
 .occurrence {
   border-radius: 2px;
+  cursor: pointer;
 }
 
 .highlighted {
