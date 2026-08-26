@@ -166,6 +166,11 @@ function renderPalette(state: AppState): void {
 
     bar.addEventListener("mouseenter", () => setHighlight(entry.id));
     bar.addEventListener("mouseleave", () => setHighlight(null));
+    bar.addEventListener("click", (e) => {
+      if ((e.target as HTMLElement).closest("button, input")) return;
+      state.selectedEntryId = state.selectedEntryId === entry.id ? null : entry.id;
+      rerender();
+    });
 
     bar.querySelector(".move-left")?.addEventListener("click", () => {
       moveEntry(state, entry.id, -1);
@@ -225,9 +230,10 @@ function renderBar(
   const hex = expandHex(entry.hex);
   const isFav = state.favorites.has(entry.hex.toLowerCase());
   const isEdited = entry.hex.toLowerCase() !== entry.originalHex.toLowerCase();
+  const isSelected = entry.id === state.selectedEntryId;
 
   return `
-    <div class="color-bar" data-entry-id="${entry.id}" style="background-color: ${hex}">
+    <div class="color-bar ${isSelected ? "selected" : ""}" data-entry-id="${entry.id}" style="background-color: ${hex}">
       <div class="color-bar-controls">
         <button class="move-left" title="Move left" ${!canReorder || index === 0 ? "disabled" : ""}>&larr;</button>
         <button class="revert-color" title="Revert to original color" ${isEdited ? "" : "disabled"}>&#8634;</button>
@@ -262,7 +268,7 @@ function renderFileView(state: AppState): void {
   let cursor = 0;
   for (const occ of sorted) {
     out += esc(state.fileText.slice(cursor, occ.start));
-    out += `<span class="occurrence" data-entry-id="${occ.entryId}"><span class="inline-swatch" style="background-color:${occ.hex}"></span>${esc(
+    out += `<span class="occurrence ${occ.entryId === state.selectedEntryId ? "selected" : ""}" data-entry-id="${occ.entryId}"><span class="inline-swatch" style="background-color:${occ.hex}"></span>${esc(
       state.fileText.slice(occ.start, occ.end),
     )}</span>`;
     cursor = occ.end;

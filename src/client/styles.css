@@ -175,6 +175,7 @@ button:disabled {
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
 }
 
 .color-bar-controls {
@@ -253,15 +254,18 @@ button:disabled {
 
 .occurrence {
   border-radius: 2px;
+  cursor: pointer;
 }
 
-.highlighted {
+.highlighted,
+.selected {
   outline: 2px solid var(--color-highlight);
   outline-offset: 1px;
   background: var(--color-highlight);
 }
 
-.color-bar.highlighted {
+.color-bar.highlighted,
+.color-bar.selected {
   outline-offset: 2px;
 }
 
