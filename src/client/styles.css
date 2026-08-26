@@ -361,6 +361,19 @@ button:disabled {
   overflow: hidden;
 }
 
+.info-swatch-original-fill {
+  position: absolute;
+  inset: 0;
+  width: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+
+.info-swatch-original-fill.show {
+  opacity: 1;
+}
+
 .info-swatch-overlay {
   position: absolute;
   inset: 0;
@@ -384,6 +397,15 @@ button:disabled {
 
 .info-swatch-overlay span:hover {
   font-weight: bold;
+}
+
+.info-swatch-original {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  cursor: default;
+  flex: 0 0 auto;
 }
 
 .info-scheme-label {
