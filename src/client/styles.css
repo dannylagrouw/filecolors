@@ -190,7 +190,7 @@ button:disabled {
   background: var(--color-control-bg);
   color: #1a1a1a;
   border-color: transparent;
-  padding: 2px 5px;
+  padding: 2px;
   font-size: 12px;
 }
 
