@@ -15,7 +15,7 @@
   --color-accent-fg: #fff;
   --color-error: #b00020;
   --color-success: #0a8a0a;
-  --color-highlight: #ffe066;
+  --color-highlight: #92afff;
   --color-control-bg: rgba(255, 255, 255, 0.85);
   --color-control-body-bg: rgba(255, 255, 255, 0.9);
 }
@@ -36,7 +36,7 @@
     --color-accent-fg: #1a1a1a;
     --color-error: #ff6b6b;
     --color-success: #6bcf6b;
-    --color-highlight: #665c1e;
+    --color-highlight: #3b6ef9;
     --color-control-bg: rgba(30, 30, 32, 0.85);
     --color-control-body-bg: rgba(30, 30, 32, 0.9);
   }
@@ -57,7 +57,7 @@
   --color-accent-fg: #1a1a1a;
   --color-error: #ff6b6b;
   --color-success: #6bcf6b;
-  --color-highlight: #665c1e;
+  --color-highlight: #3b6ef9;
   --color-control-bg: rgba(30, 30, 32, 0.85);
   --color-control-body-bg: rgba(30, 30, 32, 0.9);
 }
@@ -177,6 +177,7 @@ button:disabled {
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
 }
 
 .color-bar-controls {
@@ -264,15 +265,17 @@ button:disabled {
 
 .occurrence {
   border-radius: 2px;
+  cursor: pointer;
 }
 
-.highlighted {
+.highlighted,
+.selected {
   outline: 2px solid var(--color-highlight);
-  outline-offset: 1px;
   background: var(--color-highlight);
 }
 
-.color-bar.highlighted {
+.color-bar.highlighted,
+.color-bar.selected {
   outline-offset: 2px;
 }
 
