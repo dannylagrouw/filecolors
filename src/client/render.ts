@@ -281,13 +281,15 @@ function renderFileView(state: AppState): void {
 
 const CVD_TYPES: ColorBlindnessType[] = ["protanopia", "deuteranopia", "tritanopia", "achromatopsia"];
 
-function swatchRow(colors: string[], entryId: string): string {
+function swatchRow(colors: string[], entryId: string, originalHex: string): string {
   return `<div class="info-swatch-row">${colors
     .map((c) => {
       const overlayFg = readableTextColor(c);
       return `
         <div class="info-swatch" data-hex="${c}" style="background-color:${c}" title="${c}">
+          <div class="info-swatch-original-fill" style="background-color:${originalHex}"></div>
           <div class="info-swatch-overlay" style="color:${overlayFg}">
+            <span class="info-swatch-original" style="background-color:${originalHex}" title="Original color: ${originalHex}"></span>
             <span class="info-swatch-use" data-entry-id="${entryId}" data-hex="${c}">Use</span>
             <span class="info-swatch-copy" data-hex="${c}">Copy</span>
           </div>
@@ -313,6 +315,7 @@ function renderInfoModal(state: AppState): void {
   const { tints, shades, tones } = tintsShadesTones(hex);
   const lightnessSweep = generateShades(hex);
   const autoFg = readableTextColor(hex);
+  const originalHex = expandHex(entry.originalHex);
 
   root.innerHTML = `
     <div class="info-backdrop">
@@ -353,25 +356,28 @@ function renderInfoModal(state: AppState): void {
 
         <div class="info-section">
           <h3>Tints</h3>
-          ${swatchRow(tints, entry.id)}
+          ${swatchRow(tints, entry.id, originalHex)}
           <h3>Shades</h3>
-          ${swatchRow(shades, entry.id)}
+          ${swatchRow(shades, entry.id, originalHex)}
           <h3>Tones</h3>
-          ${swatchRow(tones, entry.id)}
+          ${swatchRow(tones, entry.id, originalHex)}
           <h3>Lightness sweep</h3>
-          ${swatchRow(lightnessSweep, entry.id)}
+          ${swatchRow(lightnessSweep, entry.id, originalHex)}
         </div>
 
         <div class="info-section">
           <h3>Color schemes</h3>
           ${schemes
-            .map((s) => `<div class="info-scheme-label">${esc(s.label)}</div>${swatchRow(s.colors, entry.id)}`)
+            .map(
+              (s) =>
+                `<div class="info-scheme-label">${esc(s.label)}</div>${swatchRow(s.colors, entry.id, originalHex)}`,
+            )
             .join("")}
         </div>
 
         <div class="info-section">
           <h3>Similar colors</h3>
-          ${swatchRow(similar, entry.id)}
+          ${swatchRow(similar, entry.id, originalHex)}
         </div>
 
         <div class="info-section">
@@ -399,6 +405,12 @@ function renderInfoModal(state: AppState): void {
   root.querySelector(".info-close")?.addEventListener("click", () => {
     state.infoOpenId = null;
     rerender();
+  });
+  root.querySelectorAll<HTMLElement>(".info-swatch-original").forEach((circle) => {
+    const fill = circle.closest<HTMLElement>(".info-swatch")?.querySelector<HTMLElement>(".info-swatch-original-fill");
+    if (!fill) return;
+    circle.addEventListener("mouseenter", () => fill.classList.add("show"));
+    circle.addEventListener("mouseleave", () => fill.classList.remove("show"));
   });
   root.querySelectorAll<HTMLElement>(".info-swatch-use").forEach((btn) => {
     btn.addEventListener("click", () => {
