@@ -16,10 +16,12 @@ export interface AppState {
   localDevMode: boolean;
   favoritesStore: FavoritesStore;
   uploadError: string | null;
-  expandedShadesId: string | null;
   sortMode: SortMode;
   themeMode: ThemeMode;
   hoveredEntryId: string | null;
+  infoOpenId: string | null;
+  infoPreviewBg: string;
+  infoPreviewFg: string;
 }
 
 export function createInitialState(localDevMode: boolean): AppState {
@@ -31,10 +33,12 @@ export function createInitialState(localDevMode: boolean): AppState {
     localDevMode,
     favoritesStore: createFavoritesStore(localDevMode),
     uploadError: null,
-    expandedShadesId: null,
     sortMode: "original",
     themeMode: loadThemeMode(),
     hoveredEntryId: null,
+    infoOpenId: null,
+    infoPreviewBg: "#ffffff",
+    infoPreviewFg: "#000000",
   };
 }
 

@@ -4,6 +4,16 @@ import { expandHex, generateShades } from "./colorUtils";
 import { copyText } from "./clipboard";
 import { downloadFile } from "./download";
 import { applyColorEdit } from "./sync";
+import {
+  colorSchemes,
+  COLOR_BLINDNESS_LABELS,
+  readableTextColor,
+  similarColors,
+  simulateColorBlindness,
+  tintsShadesTones,
+  type ColorBlindnessType,
+} from "./colorInfo";
+import { nearestColorName } from "./colorNames";
 
 export interface RenderHandlers {
   onFileSelected: (file: File) => void;
@@ -30,6 +40,7 @@ function renderAll(state: AppState, h: RenderHandlers): void {
   renderHeader(state, h);
   renderPalette(state);
   renderFileView(state);
+  renderInfoModal(state);
 }
 
 function applyTheme(mode: ThemeMode): void {
@@ -195,15 +206,11 @@ function renderPalette(state: AppState): void {
     colorInput?.addEventListener("change", () => {
       applyEdit(state, entry.id, colorInput.value);
     });
-    bar.querySelector(".shades-toggle")?.addEventListener("click", () => {
-      state.expandedShadesId = state.expandedShadesId === entry.id ? null : entry.id;
+    bar.querySelector(".info-toggle")?.addEventListener("click", () => {
+      state.infoOpenId = entry.id;
+      state.infoPreviewBg = "#ffffff";
+      state.infoPreviewFg = "#000000";
       rerender();
-    });
-    bar.querySelectorAll<HTMLElement>(".shade-swatch").forEach((swatch) => {
-      swatch.addEventListener("click", () => {
-        const hex = swatch.dataset.hex;
-        if (hex) applyEdit(state, entry.id, hex);
-      });
     });
   });
 }
@@ -217,8 +224,6 @@ function renderBar(
 ): string {
   const hex = expandHex(entry.hex);
   const isFav = state.favorites.has(entry.hex.toLowerCase());
-  const showShades = state.expandedShadesId === entry.id;
-  const shades = showShades ? generateShades(entry.hex) : [];
   const isEdited = entry.hex.toLowerCase() !== entry.originalHex.toLowerCase();
 
   return `
@@ -234,15 +239,8 @@ function renderBar(
         <span class="hex-label">${esc(entry.hex)}</span>
         <button class="copy-hex">Copy</button>
         <span class="copy-confirm"></span>
-        <button class="shades-toggle">${showShades ? "Hide shades" : "Shades"}</button>
+        <button class="info-toggle" title="Color info">&#9432; Info</button>
       </div>
-      ${
-        showShades
-          ? `<div class="shades-row">${shades
-              .map((s) => `<div class="shade-swatch" data-hex="${s}" style="background-color:${s}" title="${s}"></div>`)
-              .join("")}</div>`
-          : ""
-      }
     </div>
   `;
 }
@@ -278,6 +276,158 @@ function renderFileView(state: AppState): void {
     if (!entryId) return;
     span.addEventListener("mouseenter", () => setHighlight(entryId));
     span.addEventListener("mouseleave", () => setHighlight(null));
+  });
+}
+
+const CVD_TYPES: ColorBlindnessType[] = ["protanopia", "deuteranopia", "tritanopia", "achromatopsia"];
+
+function swatchRow(colors: string[], entryId: string): string {
+  return `<div class="info-swatch-row">${colors
+    .map((c) => {
+      const overlayFg = readableTextColor(c);
+      return `
+        <div class="info-swatch" data-hex="${c}" style="background-color:${c}" title="${c}">
+          <div class="info-swatch-overlay" style="color:${overlayFg}">
+            <span class="info-swatch-use" data-entry-id="${entryId}" data-hex="${c}">Use</span>
+            <span class="info-swatch-copy" data-hex="${c}">Copy</span>
+          </div>
+        </div>`;
+    })
+    .join("")}</div>`;
+}
+
+function renderInfoModal(state: AppState): void {
+  const root = document.getElementById("info-modal-root");
+  if (!root) return;
+
+  const entry = state.entries.find((e) => e.id === state.infoOpenId);
+  if (!entry) {
+    root.innerHTML = "";
+    return;
+  }
+
+  const hex = expandHex(entry.hex);
+  const name = nearestColorName(hex);
+  const schemes = colorSchemes(hex);
+  const similar = similarColors(hex);
+  const { tints, shades, tones } = tintsShadesTones(hex);
+  const lightnessSweep = generateShades(hex);
+  const autoFg = readableTextColor(hex);
+
+  root.innerHTML = `
+    <div class="info-backdrop">
+      <div class="info-modal">
+        <div class="info-modal-header">
+          <div>
+            <span class="info-swatch-large" style="background-color:${hex}"></span>
+            <strong>${esc(hex)}</strong>
+            <span class="info-name">${esc(name)}</span>
+          </div>
+          <button class="info-close" title="Close">&times;</button>
+        </div>
+
+        <div class="info-section">
+          <h3>Preview</h3>
+          <div class="info-preview-row">
+            <div class="info-preview-box" style="background-color:#fff;color:${hex}">Sample text on white</div>
+            <div class="info-preview-box" style="background-color:#000;color:${hex}">Sample text on black</div>
+            <div class="info-preview-box" style="background-color:${state.infoPreviewBg};color:${hex}">
+              Sample text on custom
+            </div>
+            <label class="info-preview-picker">
+              bg <input type="color" class="info-bg-picker" value="${state.infoPreviewBg}" />
+            </label>
+          </div>
+          <div class="info-preview-row">
+            <div class="info-preview-box" style="background-color:${hex};color:#fff">White text on this color</div>
+            <div class="info-preview-box" style="background-color:${hex};color:#000">Black text on this color</div>
+            <div class="info-preview-box" style="background-color:${hex};color:${state.infoPreviewFg}">
+              Custom text on this color
+            </div>
+            <label class="info-preview-picker">
+              text <input type="color" class="info-fg-picker" value="${state.infoPreviewFg}" />
+            </label>
+          </div>
+          <div class="info-hint">Best-contrast text on this color: <span style="color:${autoFg}; background-color:${hex}; padding: 0 4px; border-radius: 2px;">${autoFg}</span></div>
+        </div>
+
+        <div class="info-section">
+          <h3>Tints</h3>
+          ${swatchRow(tints, entry.id)}
+          <h3>Shades</h3>
+          ${swatchRow(shades, entry.id)}
+          <h3>Tones</h3>
+          ${swatchRow(tones, entry.id)}
+          <h3>Lightness sweep</h3>
+          ${swatchRow(lightnessSweep, entry.id)}
+        </div>
+
+        <div class="info-section">
+          <h3>Color schemes</h3>
+          ${schemes
+            .map((s) => `<div class="info-scheme-label">${esc(s.label)}</div>${swatchRow(s.colors, entry.id)}`)
+            .join("")}
+        </div>
+
+        <div class="info-section">
+          <h3>Similar colors</h3>
+          ${swatchRow(similar, entry.id)}
+        </div>
+
+        <div class="info-section">
+          <h3>Color blindness simulation</h3>
+          <div class="info-cvd-row">
+            ${CVD_TYPES.map(
+              (t) =>
+                `<div class="info-cvd-item">
+                  <div class="info-swatch" style="background-color:${simulateColorBlindness(hex, t)}" title="${COLOR_BLINDNESS_LABELS[t]}"></div>
+                  <div class="info-cvd-label">${esc(COLOR_BLINDNESS_LABELS[t])}</div>
+                </div>`,
+            ).join("")}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  root.querySelector(".info-backdrop")?.addEventListener("click", (e) => {
+    if (e.target === e.currentTarget) {
+      state.infoOpenId = null;
+      rerender();
+    }
+  });
+  root.querySelector(".info-close")?.addEventListener("click", () => {
+    state.infoOpenId = null;
+    rerender();
+  });
+  root.querySelectorAll<HTMLElement>(".info-swatch-use").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.dataset.entryId;
+      const targetHex = btn.dataset.hex;
+      if (targetId && targetHex) applyEdit(state, targetId, targetHex);
+    });
+  });
+  root.querySelectorAll<HTMLElement>(".info-swatch-copy").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const targetHex = btn.dataset.hex;
+      if (!targetHex) return;
+      const ok = await copyText(targetHex);
+      const original = btn.textContent;
+      btn.textContent = ok ? "Copied!" : "Failed";
+      setTimeout(() => {
+        btn.textContent = original;
+      }, 1000);
+    });
+  });
+  const bgPicker = root.querySelector<HTMLInputElement>(".info-bg-picker");
+  bgPicker?.addEventListener("input", () => {
+    state.infoPreviewBg = bgPicker.value;
+    rerender();
+  });
+  const fgPicker = root.querySelector<HTMLInputElement>(".info-fg-picker");
+  fgPicker?.addEventListener("input", () => {
+    state.infoPreviewFg = fgPicker.value;
+    rerender();
   });
 }
 

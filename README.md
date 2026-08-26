@@ -12,6 +12,10 @@ out.
   clipboard, edit via a color picker, revert to the original color, and
   mark favorites.
 - Inline colored swatches next to every hex code in the file view.
+- Per-color Info popup: nearest named color, contrast previews against
+  white/black/custom backgrounds and text colors, tints/shades/tones,
+  color schemes (complementary, analogous, triadic, split-complementary,
+  tetradic), similar colors, and a color-blindness simulation.
 - Editing a palette color rewrites all of its occurrences in the file text
   live, in the browser.
 - Download the edited file, or (in local-dev mode) save it straight back
