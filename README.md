@@ -51,6 +51,33 @@ PORT=8080 bun run dev
 bun run src/server/index.ts --port 8080
 ```
 
+### Config file
+
+Settings can also be stored in a JSON config file at:
+
+```
+$XDG_CONFIG_HOME/filecolors/config.json
+```
+
+falling back to `~/.config/filecolors/config.json` when `XDG_CONFIG_HOME`
+is unset. All fields are optional:
+
+```json
+{
+  "port": 8080,
+  "infoPreviewBg": "#ffffff",
+  "infoPreviewFg": "#000000",
+  "themeMode": "system"
+}
+```
+
+`port` is only used if neither `--port`/`-p` nor `PORT`/`FILECOLORS_PORT`
+is set. `infoPreviewBg`/`infoPreviewFg` seed the default contrast-preview
+colors in the per-color Info popup, and `themeMode` (`"light"`, `"dark"`,
+or `"system"`) seeds the default theme — both can still be overridden
+per-session in the app. The server also exposes this effective config at
+`GET /api/config`, and accepts updates via `PUT /api/config`.
+
 ## Local-dev mode
 
 For editing a file already on disk without a manual upload step:

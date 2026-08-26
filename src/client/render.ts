@@ -227,8 +227,8 @@ function renderPalette(state: AppState): void {
     });
     bar.querySelector(".info-toggle")?.addEventListener("click", () => {
       state.infoOpenId = entry.id;
-      state.infoPreviewBg = "#ffffff";
-      state.infoPreviewFg = "#000000";
+      state.infoPreviewBg = state.defaultInfoPreviewBg;
+      state.infoPreviewFg = state.defaultInfoPreviewFg;
       rerender();
     });
   });

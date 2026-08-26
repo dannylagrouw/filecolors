@@ -8,6 +8,18 @@ export type ThemeMode = "light" | "dark" | "system";
 
 const THEME_STORAGE_KEY = "filecolors-theme";
 
+export interface ConfigDefaults {
+  infoPreviewBg: string;
+  infoPreviewFg: string;
+  themeMode: ThemeMode;
+}
+
+export const DEFAULT_CONFIG: ConfigDefaults = {
+  infoPreviewBg: "#ffffff",
+  infoPreviewFg: "#000000",
+  themeMode: "system",
+};
+
 export interface AppState {
   filename: string | null;
   fileText: string;
@@ -23,9 +35,16 @@ export interface AppState {
   infoOpenId: string | null;
   infoPreviewBg: string;
   infoPreviewFg: string;
+  defaultInfoPreviewBg: string;
+  defaultInfoPreviewFg: string;
 }
 
-export function createInitialState(localDevMode: boolean): AppState {
+export function createInitialState(
+  localDevMode: boolean,
+  configDefaults: Partial<ConfigDefaults> = {},
+): AppState {
+  const infoPreviewBg = configDefaults.infoPreviewBg ?? DEFAULT_CONFIG.infoPreviewBg;
+  const infoPreviewFg = configDefaults.infoPreviewFg ?? DEFAULT_CONFIG.infoPreviewFg;
   return {
     filename: null,
     fileText: "",
@@ -35,23 +54,25 @@ export function createInitialState(localDevMode: boolean): AppState {
     favoritesStore: createFavoritesStore(localDevMode),
     uploadError: null,
     sortMode: "original",
-    themeMode: loadThemeMode(),
+    themeMode: loadThemeMode(configDefaults.themeMode ?? DEFAULT_CONFIG.themeMode),
     hoveredEntryId: null,
     selectedEntryId: null,
     infoOpenId: null,
-    infoPreviewBg: "#ffffff",
-    infoPreviewFg: "#000000",
+    infoPreviewBg,
+    infoPreviewFg,
+    defaultInfoPreviewBg: infoPreviewBg,
+    defaultInfoPreviewFg: infoPreviewFg,
   };
 }
 
-export function loadThemeMode(): ThemeMode {
+export function loadThemeMode(fallback: ThemeMode = "system"): ThemeMode {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
     if (stored === "light" || stored === "dark" || stored === "system") return stored;
   } catch {
-    // localStorage unavailable; fall back to system
+    // localStorage unavailable; fall back to default
   }
-  return "system";
+  return fallback;
 }
 
 export function saveThemeMode(mode: ThemeMode): void {
