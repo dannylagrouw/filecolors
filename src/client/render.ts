@@ -103,6 +103,7 @@ function renderHeader(state: AppState, h: RenderHandlers): void {
       }
       <button id="sort-toggle-btn">${sortLabels[state.sortMode]}</button>
       <button id="theme-toggle-btn">${themeLabels[state.themeMode]}</button>
+      <span id="copy-confirm" class="copy-confirm"></span>
     </div>
     ${state.uploadError ? `<div class="error">${esc(state.uploadError)}</div>` : ""}
   `;
@@ -203,7 +204,7 @@ function renderPalette(state: AppState): void {
     });
     bar.querySelector(".copy-hex")?.addEventListener("click", async () => {
       const ok = await copyText(entry.hex);
-      const confirmEl = bar.querySelector(".copy-confirm");
+      const confirmEl = document.getElementById("copy-confirm");
       if (confirmEl) {
         confirmEl.textContent = ok ? "Copied!" : "Copy failed";
         confirmEl.classList.add("show");
@@ -248,17 +249,18 @@ function renderBar(
   return `
     <div class="color-bar ${isSelected ? "selected" : ""}" data-entry-id="${entry.id}" style="background-color: ${hex}">
       <div class="color-bar-controls">
-        <button class="move-left" title="Move left" ${!canReorder || index === 0 ? "disabled" : ""}>&larr;</button>
-        <button class="revert-color" title="Revert to original color" ${isEdited ? "" : "disabled"}>&#8634;</button>
-        <button class="favorite-toggle ${isFav ? "active" : ""}" title="Favorite">${isFav ? "★" : "☆"}</button>
-        <button class="move-right" title="Move right" ${!canReorder || index === total - 1 ? "disabled" : ""}>&rarr;</button>
+        <button class="move-left" title="Move left" ${!canReorder || index === 0 ? "disabled" : ""}><i class="fa-solid fa-arrow-left"></i></button>
+        <button class="revert-color" title="Revert to original color" ${isEdited ? "" : "disabled"}><i class="fa-solid fa-rotate-left"></i></button>
+        <button class="favorite-toggle ${isFav ? "active" : ""}" title="Favorite"><i class="fa-${isFav ? "solid" : "regular"} fa-star"></i></button>
+        <button class="move-right" title="Move right" ${!canReorder || index === total - 1 ? "disabled" : ""}><i class="fa-solid fa-arrow-right"></i></button>
       </div>
       <div class="color-bar-body">
         <input type="color" class="color-picker" value="${hex}" />
         <span class="hex-label">${esc(entry.hex)}</span>
-        <button class="copy-hex">Copy</button>
-        <span class="copy-confirm"></span>
-        <button class="info-toggle" title="Color info">&#9432; Info</button>
+        <div class="color-bar-actions">
+          <button class="copy-hex" title="Copy hex code"><i class="fa-regular fa-copy"></i></button>
+          <button class="info-toggle" title="Color info"><i class="fa-solid fa-circle-info"></i></button>
+        </div>
       </div>
     </div>
   `;
@@ -314,8 +316,8 @@ function swatchRow(colors: string[], entryId: string, originalHex: string): stri
           <div class="info-swatch-original-fill" style="background-color:${originalHex}"></div>
           <div class="info-swatch-overlay" style="color:${overlayFg}">
             <span class="info-swatch-original" style="background-color:${originalHex}" title="Original color: ${originalHex}"></span>
-            <span class="info-swatch-use" data-entry-id="${entryId}" data-hex="${c}">Use</span>
-            <span class="info-swatch-copy" data-hex="${c}">Copy</span>
+            <span class="info-swatch-use" data-entry-id="${entryId}" data-hex="${c}" title="Use this color"><i class="fa-solid fa-check"></i></span>
+            <span class="info-swatch-copy" data-hex="${c}" title="Copy hex code"><i class="fa-regular fa-copy"></i></span>
           </div>
         </div>`;
     })
@@ -350,7 +352,7 @@ function renderInfoModal(state: AppState): void {
             <strong>${esc(hex)}</strong>
             <span class="info-name">${esc(name)}</span>
           </div>
-          <button class="info-close" title="Close">&times;</button>
+          <button class="info-close" title="Close"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <div class="info-section">
@@ -448,10 +450,10 @@ function renderInfoModal(state: AppState): void {
       const targetHex = btn.dataset.hex;
       if (!targetHex) return;
       const ok = await copyText(targetHex);
-      const original = btn.textContent;
-      btn.textContent = ok ? "Copied!" : "Failed";
+      const original = btn.innerHTML;
+      btn.innerHTML = ok ? `<i class="fa-solid fa-check"></i>` : `<i class="fa-solid fa-xmark"></i>`;
       setTimeout(() => {
-        btn.textContent = original;
+        btn.innerHTML = original;
       }, 1000);
     });
   });

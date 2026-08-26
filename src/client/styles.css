@@ -1,3 +1,5 @@
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
 :root {
   --color-bg: #f5f5f5;
   --color-fg: #1a1a1a;
@@ -189,7 +191,7 @@ button:disabled {
   background: var(--color-control-bg);
   color: #1a1a1a;
   border-color: transparent;
-  padding: 2px 5px;
+  padding: 2px;
   font-size: 12px;
 }
 
@@ -215,6 +217,15 @@ button:disabled {
 .hex-label {
   font-family: monospace;
   font-size: 12px;
+}
+
+.color-bar-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.color-bar-actions button {
+  flex: 1;
 }
 
 .copy-confirm {
@@ -266,10 +277,6 @@ button:disabled {
 .color-bar.highlighted,
 .color-bar.selected {
   outline-offset: 2px;
-}
-
-.info-toggle {
-  width: 100%;
 }
 
 .info-backdrop {
