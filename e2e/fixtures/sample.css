@@ -1,0 +1,9 @@
+body {
+  background: #ff0000;
+  color: #0000ff;
+}
+
+.card {
+  border: 1px solid #000000;
+  box-shadow: 0 1px 3px #ff0000;
+}

@@ -6,9 +6,11 @@
   "license": "MIT",
   "scripts": {
     "dev": "bun --hot src/server/index.ts",
-    "start": "bun src/server/index.ts"
+    "start": "bun src/server/index.ts",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/bun": "latest"
   },
   "peerDependencies": {
