@@ -1235,8 +1235,13 @@ function redmeanDistance(a: [number, number, number], b: [number, number, number
   return Math.sqrt((2 + rMean / 256) * dr * dr + 4 * dg * dg + (2 + (255 - rMean) / 256) * db * db);
 }
 
+const nearestColorNameCache = new Map<string, string>();
+
 /** Nearest named color to the given hex, e.g. "Medium Purple". */
 export function nearestColorName(hex: string): string {
+  const cached = nearestColorNameCache.get(hex);
+  if (cached !== undefined) return cached;
+
   const target = hexToRgb(hex);
   let best = NAMED_COLORS[0]!;
   let bestDist = Infinity;
@@ -1247,5 +1252,6 @@ export function nearestColorName(hex: string): string {
       best = entry;
     }
   }
+  nearestColorNameCache.set(hex, best[0]);
   return best[0];
 }
