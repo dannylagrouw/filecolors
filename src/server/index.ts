@@ -6,6 +6,13 @@ const DEFAULT_INFO_PREVIEW_BG = "#ffffff";
 const DEFAULT_INFO_PREVIEW_FG = "#000000";
 const DEFAULT_THEME_MODE = "system";
 
+const HEX_COLOR_PATTERN = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+const THEME_MODES = new Set(["light", "dark", "system"]);
+
+function isValidHexColor(value: unknown): value is string {
+  return typeof value === "string" && HEX_COLOR_PATTERN.test(value);
+}
+
 function resolvePort(config: Config): number {
   const argv = process.argv;
   const flagIndex = argv.findIndex((a) => a === "--port" || a === "-p");
@@ -76,6 +83,11 @@ const server = Bun.serve({
         if (!isLocalDevMode) return new Response("Not in local-dev mode", { status: 404 });
         const body = (await req.json()) as unknown;
         if (!Array.isArray(body)) return new Response("Expected an array", { status: 400 });
+        for (const entry of body) {
+          if (!entry || typeof entry !== "object" || !isValidHexColor((entry as { hex?: unknown }).hex)) {
+            return new Response("Each favorite must have a valid hex color", { status: 400 });
+          }
+        }
         await writeFavorites(body as { hex: string; name: string }[]);
         return Response.json({ ok: true });
       },
@@ -89,10 +101,20 @@ const server = Bun.serve({
           themeMode: config.themeMode ?? DEFAULT_THEME_MODE,
         }),
       PUT: async (req) => {
+        if (!isLocalDevMode) return new Response("Not in local-dev mode", { status: 404 });
         const body = (await req.json()) as Partial<Config>;
-        if (body.infoPreviewBg !== undefined) config.infoPreviewBg = body.infoPreviewBg;
-        if (body.infoPreviewFg !== undefined) config.infoPreviewFg = body.infoPreviewFg;
-        if (body.themeMode !== undefined) config.themeMode = body.themeMode;
+        if (body.infoPreviewBg !== undefined) {
+          if (!isValidHexColor(body.infoPreviewBg)) return new Response("Invalid infoPreviewBg", { status: 400 });
+          config.infoPreviewBg = body.infoPreviewBg;
+        }
+        if (body.infoPreviewFg !== undefined) {
+          if (!isValidHexColor(body.infoPreviewFg)) return new Response("Invalid infoPreviewFg", { status: 400 });
+          config.infoPreviewFg = body.infoPreviewFg;
+        }
+        if (body.themeMode !== undefined) {
+          if (!THEME_MODES.has(body.themeMode)) return new Response("Invalid themeMode", { status: 400 });
+          config.themeMode = body.themeMode;
+        }
         await writeConfig(config);
         return Response.json({ ok: true });
       },
