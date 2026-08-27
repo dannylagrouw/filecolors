@@ -16,6 +16,7 @@
   --color-error: #b00020;
   --color-success: #0a8a0a;
   --color-highlight: #92afff;
+  --color-edited: #2fa84f;
   --color-control-bg: rgba(255, 255, 255, 0.85);
   --color-control-body-bg: rgba(255, 255, 255, 0.9);
 }
@@ -37,6 +38,7 @@
     --color-error: #ff6b6b;
     --color-success: #6bcf6b;
     --color-highlight: #3b6ef9;
+    --color-edited: #4bd671;
     --color-control-bg: rgba(30, 30, 32, 0.85);
     --color-control-body-bg: rgba(30, 30, 32, 0.9);
   }
@@ -58,6 +60,7 @@
   --color-error: #ff6b6b;
   --color-success: #6bcf6b;
   --color-highlight: #3b6ef9;
+  --color-edited: #4bd671;
   --color-control-bg: rgba(30, 30, 32, 0.85);
   --color-control-body-bg: rgba(30, 30, 32, 0.9);
 }
@@ -268,6 +271,13 @@ button:disabled {
   cursor: pointer;
 }
 
+.occurrence.edited {
+  color: var(--color-success);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
 .highlighted,
 .selected {
   outline: 2px solid var(--color-highlight);
@@ -277,6 +287,15 @@ button:disabled {
 .color-bar.highlighted,
 .color-bar.selected {
   outline-offset: 2px;
+}
+
+.color-bar.edited {
+  border: 2px solid var(--color-edited);
+}
+
+.color-bar.edited.highlighted,
+.color-bar.edited.selected {
+  outline-offset: 4px;
 }
 
 .info-backdrop {
@@ -484,4 +503,72 @@ button:disabled {
   font-size: 11px;
   color: var(--color-muted);
   text-align: center;
+}
+
+.favorites-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.favorites-modal {
+  background: var(--color-panel-bg);
+  color: var(--color-fg);
+  border-radius: 8px;
+  padding: 16px 20px 20px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.empty-favorites {
+  color: var(--color-muted-2);
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+.favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.favorites-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.favorites-item:last-child {
+  border-bottom: none;
+}
+
+.favorites-name {
+  flex: 1;
+  font-size: 13px;
+}
+
+.favorites-hex {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.favorites-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.favorites-actions button {
+  padding: 4px 6px;
+  font-size: 12px;
 }

@@ -1,45 +1,64 @@
 const STORAGE_KEY = "filecolors:favorites";
 
+export interface FavoriteRecord {
+  hex: string;
+  name: string;
+}
+
 export interface FavoritesStore {
-  load(): Promise<Set<string>>;
-  toggle(hex: string, favorited: boolean): Promise<void>;
+  load(): Promise<Map<string, string>>;
+  save(favorites: Map<string, string>): Promise<void>;
+}
+
+function toRecords(favorites: Map<string, string>): FavoriteRecord[] {
+  return [...favorites.entries()].map(([hex, name]) => ({ hex, name }));
+}
+
+function toMap(records: unknown): Map<string, string> {
+  if (!Array.isArray(records)) return new Map();
+  const map = new Map<string, string>();
+  for (const r of records) {
+    if (r && typeof r === "object" && typeof (r as FavoriteRecord).hex === "string") {
+      const hex = (r as FavoriteRecord).hex;
+      const name = typeof (r as FavoriteRecord).name === "string" ? (r as FavoriteRecord).name : hex;
+      map.set(hex, name);
+    } else if (typeof r === "string") {
+      // Backwards compatibility with the old hex-only format.
+      map.set(r, r);
+    }
+  }
+  return map;
 }
 
 class LocalStorageFavorites implements FavoritesStore {
-  async load(): Promise<Set<string>> {
+  async load(): Promise<Map<string, string>> {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      const arr: string[] = raw ? JSON.parse(raw) : [];
-      return new Set(arr);
+      const arr: unknown = raw ? JSON.parse(raw) : [];
+      return toMap(arr);
     } catch {
-      return new Set();
+      return new Map();
     }
   }
 
-  async toggle(hex: string, favorited: boolean): Promise<void> {
-    const current = await this.load();
-    if (favorited) current.add(hex);
-    else current.delete(hex);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...current]));
+  async save(favorites: Map<string, string>): Promise<void> {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toRecords(favorites)));
   }
 }
 
 class ServerFavorites implements FavoritesStore {
-  async load(): Promise<Set<string>> {
+  async load(): Promise<Map<string, string>> {
     const res = await fetch("/api/favorites");
-    if (!res.ok) return new Set();
-    const arr = (await res.json()) as string[];
-    return new Set(arr);
+    if (!res.ok) return new Map();
+    const arr: unknown = await res.json();
+    return toMap(arr);
   }
 
-  async toggle(hex: string, favorited: boolean): Promise<void> {
-    const current = await this.load();
-    if (favorited) current.add(hex);
-    else current.delete(hex);
+  async save(favorites: Map<string, string>): Promise<void> {
     await fetch("/api/favorites", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify([...current]),
+      body: JSON.stringify(toRecords(favorites)),
     });
   }
 }

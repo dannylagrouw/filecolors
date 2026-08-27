@@ -76,7 +76,7 @@ const server = Bun.serve({
         if (!isLocalDevMode) return new Response("Not in local-dev mode", { status: 404 });
         const body = (await req.json()) as unknown;
         if (!Array.isArray(body)) return new Response("Expected an array", { status: 400 });
-        await writeFavorites(body as string[]);
+        await writeFavorites(body as { hex: string; name: string }[]);
         return Response.json({ ok: true });
       },
     },
