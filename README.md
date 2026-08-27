@@ -122,9 +122,24 @@ filecolors.sh Local-dev launcher script
 
 ## Testing
 
+Unit tests (`bun:test`):
+
 ```sh
 bun test
 ```
+
+End-to-end UI tests ([Playwright](https://playwright.dev)), covering the
+browser flows: uploading a file and seeing the palette populate, opening and
+closing the per-color Info popup, editing a color and seeing the file view
+and palette swatch update, and favoriting/using a color:
+
+```sh
+bunx playwright install --with-deps chromium   # one-time browser install
+bun run test:e2e
+```
+
+`bun run test:e2e` starts the app itself (see `playwright.config.ts`), so no
+separate server needs to be running first.
 
 ## Limitations
 

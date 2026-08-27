@@ -1,0 +1,4 @@
+[test]
+# Playwright e2e specs live under e2e/ and are run via `bun run test:e2e`
+# (playwright test), not bun's own test runner.
+root = "src"
