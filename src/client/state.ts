@@ -12,7 +12,7 @@ export interface AppState {
   filename: string | null;
   fileText: string;
   entries: PaletteEntry[];
-  favorites: Set<string>;
+  favorites: Map<string, string>;
   localDevMode: boolean;
   favoritesStore: FavoritesStore;
   uploadError: string | null;
@@ -23,6 +23,7 @@ export interface AppState {
   infoOpenId: string | null;
   infoPreviewBg: string;
   infoPreviewFg: string;
+  favoritesOpen: boolean;
 }
 
 export function createInitialState(localDevMode: boolean): AppState {
@@ -30,7 +31,7 @@ export function createInitialState(localDevMode: boolean): AppState {
     filename: null,
     fileText: "",
     entries: [],
-    favorites: new Set(),
+    favorites: new Map(),
     localDevMode,
     favoritesStore: createFavoritesStore(localDevMode),
     uploadError: null,
@@ -41,7 +42,20 @@ export function createInitialState(localDevMode: boolean): AppState {
     infoOpenId: null,
     infoPreviewBg: "#ffffff",
     infoPreviewFg: "#000000",
+    favoritesOpen: false,
   };
+}
+
+/** Adds or renames a favorite and persists the change. */
+export async function setFavorite(state: AppState, hex: string, name: string): Promise<void> {
+  state.favorites.set(hex.toLowerCase(), name);
+  await state.favoritesStore.save(state.favorites);
+}
+
+/** Removes a favorite and persists the change. */
+export async function removeFavorite(state: AppState, hex: string): Promise<void> {
+  state.favorites.delete(hex.toLowerCase());
+  await state.favoritesStore.save(state.favorites);
 }
 
 export function loadThemeMode(): ThemeMode {
