@@ -51,6 +51,12 @@ PORT=8080 bun run dev
 bun run src/server/index.ts --port 8080
 ```
 
+The server binds to `127.0.0.1` (loopback only) by default, so it isn't
+reachable from other devices on your network. Override with the
+`FILECOLORS_HOST` env var if you intentionally want to expose it
+elsewhere — there is no authentication, so only do this on a trusted
+network.
+
 ### Config file
 
 Settings can also be stored in a JSON config file at:

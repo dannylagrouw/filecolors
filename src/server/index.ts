@@ -21,8 +21,13 @@ function resolvePort(config: Config): number {
   return port;
 }
 
+function resolveHostname(): string {
+  return process.env.FILECOLORS_HOST ?? "127.0.0.1";
+}
+
 const config = await readConfig();
 const port = resolvePort(config);
+const hostname = resolveHostname();
 const filePath = process.env.FILECOLORS_FILE;
 let preloadedFile: { path: string; filename: string; content: string } | null = null;
 
@@ -40,6 +45,7 @@ const isLocalDevMode = preloadedFile !== null;
 
 const server = Bun.serve({
   port,
+  hostname,
   routes: {
     "/": index,
 
