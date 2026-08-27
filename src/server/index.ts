@@ -1,12 +1,18 @@
 import index from "../../public/index.html";
 import { readFavorites, writeFavorites } from "./favoritesStore";
+import { readConfig, writeConfig, type Config } from "./config";
 
-function resolvePort(): number {
+const DEFAULT_INFO_PREVIEW_BG = "#ffffff";
+const DEFAULT_INFO_PREVIEW_FG = "#000000";
+const DEFAULT_THEME_MODE = "system";
+
+function resolvePort(config: Config): number {
   const argv = process.argv;
   const flagIndex = argv.findIndex((a) => a === "--port" || a === "-p");
   const fromFlag = flagIndex !== -1 ? argv[flagIndex + 1] : undefined;
   const fromEnv = process.env.PORT ?? process.env.FILECOLORS_PORT;
-  const raw = fromFlag ?? fromEnv ?? "3000";
+  const fromConfig = config.port !== undefined ? String(config.port) : undefined;
+  const raw = fromFlag ?? fromEnv ?? fromConfig ?? "3000";
   const port = Number(raw);
   if (!Number.isInteger(port) || port <= 0 || port > 65535) {
     console.error(`Invalid port: ${raw}`);
@@ -15,7 +21,8 @@ function resolvePort(): number {
   return port;
 }
 
-const port = resolvePort();
+const config = await readConfig();
+const port = resolvePort(config);
 const filePath = process.env.FILECOLORS_FILE;
 let preloadedFile: { path: string; filename: string; content: string } | null = null;
 
@@ -70,6 +77,23 @@ const server = Bun.serve({
         const body = (await req.json()) as unknown;
         if (!Array.isArray(body)) return new Response("Expected an array", { status: 400 });
         await writeFavorites(body as { hex: string; name: string }[]);
+        return Response.json({ ok: true });
+      },
+    },
+
+    "/api/config": {
+      GET: () =>
+        Response.json({
+          infoPreviewBg: config.infoPreviewBg ?? DEFAULT_INFO_PREVIEW_BG,
+          infoPreviewFg: config.infoPreviewFg ?? DEFAULT_INFO_PREVIEW_FG,
+          themeMode: config.themeMode ?? DEFAULT_THEME_MODE,
+        }),
+      PUT: async (req) => {
+        const body = (await req.json()) as Partial<Config>;
+        if (body.infoPreviewBg !== undefined) config.infoPreviewBg = body.infoPreviewBg;
+        if (body.infoPreviewFg !== undefined) config.infoPreviewFg = body.infoPreviewFg;
+        if (body.themeMode !== undefined) config.themeMode = body.themeMode;
+        await writeConfig(config);
         return Response.json({ ok: true });
       },
     },

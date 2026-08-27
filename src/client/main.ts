@@ -1,4 +1,4 @@
-import { createInitialState, loadFile, MAX_FILE_SIZE_BYTES, type AppState } from "./state";
+import { createInitialState, loadFile, MAX_FILE_SIZE_BYTES, type AppState, type ConfigDefaults } from "./state";
 import { scheduleRender, type RenderHandlers } from "./render";
 
 async function readFileAsText(file: File): Promise<string> {
@@ -18,9 +18,19 @@ async function detectLocalDevMode(): Promise<{ localDevMode: boolean; filename?:
   return { localDevMode: false };
 }
 
+async function fetchConfigDefaults(): Promise<Partial<ConfigDefaults>> {
+  try {
+    const res = await fetch("/api/config");
+    if (res.ok) return (await res.json()) as Partial<ConfigDefaults>;
+  } catch {
+    // network error; fall back to built-in defaults
+  }
+  return {};
+}
+
 async function bootstrap(): Promise<void> {
-  const preload = await detectLocalDevMode();
-  const state = createInitialState(preload.localDevMode);
+  const [preload, configDefaults] = await Promise.all([detectLocalDevMode(), fetchConfigDefaults()]);
+  const state = createInitialState(preload.localDevMode, configDefaults);
   state.favorites = await state.favoritesStore.load();
 
   const handlers: RenderHandlers = {
