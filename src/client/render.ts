@@ -301,14 +301,24 @@ function renderFileView(state: AppState): void {
   }
 
   const sorted = [...state.entries]
-    .flatMap((entry) => entry.occurrences.map((occ) => ({ ...occ, hex: expandHex(entry.hex), entryId: entry.id })))
+    .flatMap((entry) =>
+      entry.occurrences.map((occ) => ({
+        ...occ,
+        hex: expandHex(entry.hex),
+        entryId: entry.id,
+        isEdited: entry.hex.toLowerCase() !== entry.originalHex.toLowerCase(),
+      })),
+    )
     .sort((a, b) => a.start - b.start);
 
   let out = "";
   let cursor = 0;
   for (const occ of sorted) {
     out += esc(state.fileText.slice(cursor, occ.start));
-    out += `<span class="occurrence ${occ.entryId === state.selectedEntryId ? "selected" : ""}" data-entry-id="${occ.entryId}"><span class="inline-swatch" style="background-color:${occ.hex}"></span>${esc(
+    const classes = ["occurrence"];
+    if (occ.entryId === state.selectedEntryId) classes.push("selected");
+    if (occ.isEdited) classes.push("edited");
+    out += `<span class="${classes.join(" ")}" data-entry-id="${occ.entryId}"><span class="inline-swatch" style="background-color:${occ.hex}"></span>${esc(
       state.fileText.slice(occ.start, occ.end),
     )}</span>`;
     cursor = occ.end;
