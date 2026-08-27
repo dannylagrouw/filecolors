@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join, dirname } from "node:path";
-import { mkdir } from "node:fs/promises";
+import { mkdir, rename } from "node:fs/promises";
 
 export interface Config {
   port?: number;
@@ -30,5 +30,7 @@ export async function readConfig(): Promise<Config> {
 export async function writeConfig(config: Config): Promise<void> {
   const path = resolveConfigPath();
   await mkdir(dirname(path), { recursive: true });
-  await Bun.write(path, JSON.stringify(config, null, 2));
+  const tempPath = `${path}.${crypto.randomUUID()}.tmp`;
+  await Bun.write(tempPath, JSON.stringify(config, null, 2));
+  await rename(tempPath, path);
 }
