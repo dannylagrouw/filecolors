@@ -272,7 +272,7 @@ function renderBar(
   const isSelected = entry.id === state.selectedEntryId;
 
   return `
-    <div class="color-bar ${isSelected ? "selected" : ""}" data-entry-id="${entry.id}" style="background-color: ${hex}">
+    <div class="color-bar ${isSelected ? "selected" : ""} ${isEdited ? "edited" : ""}" data-entry-id="${entry.id}" style="background-color: ${hex}">
       <div class="color-bar-controls">
         <button class="move-left" title="Move left" ${!canReorder || index === 0 ? "disabled" : ""}><i class="fa-solid fa-arrow-left"></i></button>
         <button class="revert-color" title="Revert to original color" ${isEdited ? "" : "disabled"}><i class="fa-solid fa-rotate-left"></i></button>
