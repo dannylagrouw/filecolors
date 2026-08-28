@@ -126,6 +126,23 @@ $XDG_STATE_HOME/filecolors/favorites.json
 falling back to `~/.local/state/filecolors/favorites.json` when
 `XDG_STATE_HOME` is unset.
 
+## Container image
+
+Running the manual "Release" workflow (`.github/workflows/release.yml`,
+triggered via `workflow_dispatch`) builds and publishes a container image to
+`ghcr.io/dannylagrouw/filecolors`, tagged with the release version and
+`latest`. The image runs the server in hosted/upload mode (no
+`FILECOLORS_FILE`), so local-dev-only routes (save-to-disk, disk-backed
+favorites) stay disabled.
+
+Since the server binds to `127.0.0.1` by default, set `FILECOLORS_HOST=0.0.0.0`
+when running the container so it's reachable from outside its own network
+namespace:
+
+```sh
+docker run -p 3000:3000 -e FILECOLORS_HOST=0.0.0.0 ghcr.io/dannylagrouw/filecolors:latest
+```
+
 ## Project structure
 
 ```
