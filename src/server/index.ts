@@ -21,8 +21,20 @@ function resolvePort(config: Config): number {
   return port;
 }
 
+const LOOPBACK_HOSTNAMES = new Set(["127.0.0.1", "localhost", "::1"]);
+
+function resolveHostname(config: Config): string {
+  const argv = process.argv;
+  const flagIndex = argv.findIndex((a) => a === "--host");
+  const fromFlag = flagIndex !== -1 ? argv[flagIndex + 1] : undefined;
+  const fromEnv = process.env.FILECOLORS_HOST;
+  const fromConfig = config.host;
+  return fromFlag ?? fromEnv ?? fromConfig ?? "127.0.0.1";
+}
+
 const config = await readConfig();
 const port = resolvePort(config);
+const hostname = resolveHostname(config);
 const filePath = process.env.FILECOLORS_FILE;
 let preloadedFile: { path: string; filename: string; content: string } | null = null;
 
@@ -40,6 +52,7 @@ const isLocalDevMode = preloadedFile !== null;
 
 const server = Bun.serve({
   port,
+  hostname,
   routes: {
     "/": index,
 
@@ -108,4 +121,7 @@ const server = Bun.serve({
 console.log(`filecolors running at ${server.url}`);
 if (preloadedFile) {
   console.log(`Preloaded file: ${preloadedFile.path}`);
+}
+if (!LOOPBACK_HOSTNAMES.has(hostname)) {
+  console.warn(`⚠️ filecolors listening on ${hostname} (not localhost-only)`);
 }
