@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join, dirname } from "node:path";
-import { mkdir } from "node:fs/promises";
+import { mkdir, rename } from "node:fs/promises";
 
 export interface FavoriteRecord {
   hex: string;
@@ -44,5 +44,7 @@ export async function readFavorites(): Promise<FavoriteRecord[]> {
 export async function writeFavorites(favorites: FavoriteRecord[]): Promise<void> {
   const path = resolveFavoritesPath();
   await mkdir(dirname(path), { recursive: true });
-  await Bun.write(path, JSON.stringify(normalize(favorites), null, 2));
+  const tempPath = `${path}.${crypto.randomUUID()}.tmp`;
+  await Bun.write(tempPath, JSON.stringify(normalize(favorites), null, 2));
+  await rename(tempPath, path);
 }
