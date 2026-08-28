@@ -18,6 +18,7 @@ jobs:
           fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
+      - run: bunx tsc --noEmit
       - run: bun test
       - name: Create tag
         run: |
