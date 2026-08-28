@@ -1,10 +1,7 @@
 import index from "../../public/index.html";
 import { readFavorites, writeFavorites } from "./favoritesStore";
 import { readConfig, writeConfig, type Config } from "./config";
-
-const DEFAULT_INFO_PREVIEW_BG = "#ffffff";
-const DEFAULT_INFO_PREVIEW_FG = "#000000";
-const DEFAULT_THEME_MODE = "system";
+import { createRoutes } from "./routes";
 
 function resolvePort(config: Config): number {
   const argv = process.argv;
@@ -21,8 +18,20 @@ function resolvePort(config: Config): number {
   return port;
 }
 
+const LOOPBACK_HOSTNAMES = new Set(["127.0.0.1", "localhost", "::1"]);
+
+function resolveHostname(config: Config): string {
+  const argv = process.argv;
+  const flagIndex = argv.findIndex((a) => a === "--host");
+  const fromFlag = flagIndex !== -1 ? argv[flagIndex + 1] : undefined;
+  const fromEnv = process.env.FILECOLORS_HOST;
+  const fromConfig = config.host;
+  return fromFlag ?? fromEnv ?? fromConfig ?? "127.0.0.1";
+}
+
 const config = await readConfig();
 const port = resolvePort(config);
+const hostname = resolveHostname(config);
 const filePath = process.env.FILECOLORS_FILE;
 let preloadedFile: { path: string; filename: string; content: string } | null = null;
 
@@ -36,67 +45,18 @@ if (filePath) {
   };
 }
 
-const isLocalDevMode = preloadedFile !== null;
-
 const server = Bun.serve({
   port,
+  hostname,
   routes: {
     "/": index,
-
-    "/api/health": {
-      GET: () => Response.json({ status: "ok" }),
-    },
-
-    "/api/local-file": {
-      GET: () => {
-        if (!preloadedFile) return new Response("Not in local-dev mode", { status: 404 });
-        return Response.json({ filename: preloadedFile.filename, content: preloadedFile.content });
-      },
-    },
-
-    "/api/local-file/save": {
-      POST: async (req) => {
-        if (!preloadedFile) return new Response("Not in local-dev mode", { status: 404 });
-        const body = (await req.json()) as { content?: string };
-        if (typeof body.content !== "string") {
-          return new Response("Missing content", { status: 400 });
-        }
-        await Bun.write(preloadedFile.path, body.content);
-        preloadedFile.content = body.content;
-        return Response.json({ ok: true });
-      },
-    },
-
-    "/api/favorites": {
-      GET: async () => {
-        if (!isLocalDevMode) return new Response("Not in local-dev mode", { status: 404 });
-        return Response.json(await readFavorites());
-      },
-      PUT: async (req) => {
-        if (!isLocalDevMode) return new Response("Not in local-dev mode", { status: 404 });
-        const body = (await req.json()) as unknown;
-        if (!Array.isArray(body)) return new Response("Expected an array", { status: 400 });
-        await writeFavorites(body as { hex: string; name: string }[]);
-        return Response.json({ ok: true });
-      },
-    },
-
-    "/api/config": {
-      GET: () =>
-        Response.json({
-          infoPreviewBg: config.infoPreviewBg ?? DEFAULT_INFO_PREVIEW_BG,
-          infoPreviewFg: config.infoPreviewFg ?? DEFAULT_INFO_PREVIEW_FG,
-          themeMode: config.themeMode ?? DEFAULT_THEME_MODE,
-        }),
-      PUT: async (req) => {
-        const body = (await req.json()) as Partial<Config>;
-        if (body.infoPreviewBg !== undefined) config.infoPreviewBg = body.infoPreviewBg;
-        if (body.infoPreviewFg !== undefined) config.infoPreviewFg = body.infoPreviewFg;
-        if (body.themeMode !== undefined) config.themeMode = body.themeMode;
-        await writeConfig(config);
-        return Response.json({ ok: true });
-      },
-    },
+    ...createRoutes({
+      config,
+      preloadedFile,
+      readFavorites,
+      writeFavorites,
+      writeConfig,
+    }),
   },
 
   development: {
@@ -108,4 +68,7 @@ const server = Bun.serve({
 console.log(`filecolors running at ${server.url}`);
 if (preloadedFile) {
   console.log(`Preloaded file: ${preloadedFile.path}`);
+}
+if (!LOOPBACK_HOSTNAMES.has(hostname)) {
+  console.warn(`⚠️ filecolors listening on ${hostname} (not localhost-only)`);
 }
