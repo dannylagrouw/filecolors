@@ -1,7 +1,7 @@
 import { test, expect, beforeEach, afterEach } from "bun:test";
-import { mkdtemp } from "node:fs/promises";
+import { mkdtemp, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import { readFavorites, writeFavorites, resolveFavoritesPath } from "./favoritesStore";
 
 let tempDir: string;
@@ -39,4 +39,10 @@ test("readFavorites normalizes legacy hex-only string entries", async () => {
 test("readFavorites ignores malformed entries", async () => {
   await Bun.write(resolveFavoritesPath(), JSON.stringify([{ name: "no hex" }, 42, null]));
   expect(await readFavorites()).toEqual([]);
+});
+
+test("writeFavorites leaves no temp files behind", async () => {
+  await writeFavorites([{ hex: "#ff0000", name: "Red" }]);
+  const files = await readdir(dirname(resolveFavoritesPath()));
+  expect(files).toEqual(["favorites.json"]);
 });
