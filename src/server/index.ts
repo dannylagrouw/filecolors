@@ -123,5 +123,5 @@ if (preloadedFile) {
   console.log(`Preloaded file: ${preloadedFile.path}`);
 }
 if (!LOOPBACK_HOSTNAMES.has(hostname)) {
-  console.warn(`⚠ filecolors listening on ${hostname} (not localhost-only)`);
+  console.warn(`⚠️ filecolors listening on ${hostname} (not localhost-only)`);
 }
