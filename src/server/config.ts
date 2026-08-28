@@ -4,6 +4,7 @@ import { mkdir, rename } from "node:fs/promises";
 
 export interface Config {
   port?: number;
+  host?: string;
   infoPreviewBg?: string;
   infoPreviewFg?: string;
   themeMode?: "light" | "dark" | "system";
