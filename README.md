@@ -52,10 +52,19 @@ bun run src/server/index.ts --port 8080
 ```
 
 The server binds to `127.0.0.1` (loopback only) by default, so it isn't
-reachable from other devices on your network. Override with the
-`FILECOLORS_HOST` env var if you intentionally want to expose it
-elsewhere — there is no authentication, so only do this on a trusted
-network.
+reachable from other devices on your network. Override with a
+`--host` flag, the `FILECOLORS_HOST` env var, or a `host` field in the
+config file if you intentionally want to expose it elsewhere — there is
+no authentication, so only do this on a trusted network (e.g. your own
+Tailscale/VPN interface, not a shared LAN/Wi-Fi):
+
+```sh
+bun run src/server/index.ts --host 100.x.x.x
+```
+
+Whenever the effective bind address isn't loopback, the server prints a
+warning at startup so a lingering non-default setting doesn't go
+unnoticed.
 
 ### Config file
 
@@ -71,6 +80,7 @@ is unset. All fields are optional:
 ```json
 {
   "port": 8080,
+  "host": "127.0.0.1",
   "infoPreviewBg": "#ffffff",
   "infoPreviewFg": "#000000",
   "themeMode": "system"
@@ -78,6 +88,7 @@ is unset. All fields are optional:
 ```
 
 `port` is only used if neither `--port`/`-p` nor `PORT`/`FILECOLORS_PORT`
+is set, and `host` is only used if neither `--host` nor `FILECOLORS_HOST`
 is set. `infoPreviewBg`/`infoPreviewFg` seed the default contrast-preview
 colors in the per-color Info popup, and `themeMode` (`"light"`, `"dark"`,
 or `"system"`) seeds the default theme — both can still be overridden
